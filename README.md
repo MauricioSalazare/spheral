@@ -6,7 +6,7 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/spheral)](https://pypi.python.org/pypi/spheral/)
 
 # Spheral
-## What is MultiCopula?
+## What is Spheral?
 It is a principal component analysis (PCA) dimensionality reduction technique that projects the data into a Sphere-like
 structure.
 
