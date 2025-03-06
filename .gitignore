@@ -1,4 +1,7 @@
+.idea/
 __pycache__/
+.vscode/
+/trash
 *.pyc
 *.pyo
 *.pyd
