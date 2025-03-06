@@ -8,3 +8,6 @@ poetry.lock
 dist/
 build/
 *.egg-info/
+data
+logs
+main.py
