@@ -11,12 +11,11 @@ from spheral.data_models import (
     OutlierModel,
     OutlierParameters,
     SphereOutlierModel,
-    BoundType,
+    BoundType, polar_coordinates,
 )
 from spheral.sphere_utils import (
     sorted_eignevalues,
     fit_sphere,
-    polar_coordinates,
     shift_by_angle_mean,
     mean_angle_radians,
     scale,

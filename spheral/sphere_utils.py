@@ -27,21 +27,6 @@ def fitfunc(p, coords):
     return np.sqrt((x - x0) ** 2 + (y - y0) ** 2 + (z - z0) ** 2)
 
 
-def spherical_to_cartesian(theta, phi, r: float = 1):
-    """
-    Convert spherical coordinates to Cartesian coordinates.
-
-    :param theta: Polar angle in radians (angle from the positive Z-axis)
-    :param phi: Azimuthal angle in radians (angle in the XY-plane from the X-axis)
-    :param r: Radius (default is 1)
-    :return: x, y, z Cartesian coordinates
-    """
-    x = r * np.sin(theta) * np.cos(phi)
-    y = r * np.sin(theta) * np.sin(phi)
-    z = r * np.cos(theta)
-
-    return x, y, z
-
 
 def fit_sphere(
     z_frame_full: pd.DataFrame, wireframe_res: int = 100
@@ -71,111 +56,6 @@ def fit_sphere(
     )
 
     return z_frame_centered, sphere_parameters
-
-
-def polar_coordinates(coords_pca):
-    """
-    Polar coordinates are referenced as ISO.
-        R: radius from the center
-        theta: Angle from the z+ axis
-        phi: Azimuth from the x+ axis
-
-
-    This is the correct version as guided by wikipedia, real data shows that it is also correct
-
-    Input:
-    ------
-        coords_pca: np.array: dim = (samples, 3). Each column corresponds to one dimension:
-            e.g. columns == z_0, z_1, z_2, which are x, y, z coordinates.
-
-    Return:
-    -------
-        tuple = (r, theta, phi) and angles are in degrees
-
-    """
-
-    r_pca = np.sqrt(
-        coords_pca[:, 0] ** 2 + coords_pca[:, 1] ** 2 + coords_pca[:, 2] ** 2
-    )
-
-    # -------------------------------------------------------------------------------------
-    ## PHI CONVERSION (AZIMUTHAL ANGLE)
-    # phi_pca = np.arctan(coords_pca[:, 1] / coords_pca[:, 0])
-    # phi_pca_degrees = np.degrees(phi_pca)
-
-    phi_pca_degrees = np.zeros(coords_pca.shape[0])
-
-    # Rules of quadrants for azimuthal angle.
-    # Six rules for the phi angle: https://en.wikipedia.org/wiki/Spherical_coordinate_system
-    # Section Coordinates system conversions -> Cartesian coordinates
-
-    idx_rule_1 = coords_pca[:, 0] > 0.0  # Do nothing
-    idx_rule_2 = (coords_pca[:, 0] < 0.0) & (coords_pca[:, 1] >= 0.0)
-    idx_rule_3 = (coords_pca[:, 0] < 0.0) & (coords_pca[:, 1] < 0.0)
-    idx_rule_4 = (coords_pca[:, 0] == 0.0) & (coords_pca[:, 1] > 0.0)
-    idx_rule_5 = (coords_pca[:, 0] == 0.0) & (coords_pca[:, 1] < 0.0)
-    idx_rule_6 = (coords_pca[:, 0] == 0.0) & (coords_pca[:, 1] == 0.0)
-
-    # phi_pca_degrees[idx_rule_2] += 180.0
-    # phi_pca_degrees[idx_rule_3] -= 180.0
-    # phi_pca_degrees[idx_rule_4] = 90.0
-    # phi_pca_degrees[idx_rule_5] = -90.0
-    # phi_pca_degrees[idx_rule_6] = np.nan
-
-    phi_pca_degrees[idx_rule_1] = np.degrees(
-        np.arctan(coords_pca[idx_rule_1, 1] / coords_pca[idx_rule_1, 0])
-    )
-    phi_pca_degrees[idx_rule_2] = (
-        np.degrees(np.arctan(coords_pca[idx_rule_2, 1] / coords_pca[idx_rule_2, 0]))
-        + 180.0
-    )
-    phi_pca_degrees[idx_rule_3] = (
-        np.degrees(np.arctan(coords_pca[idx_rule_3, 1] / coords_pca[idx_rule_3, 0]))
-        - 180.0
-    )
-    phi_pca_degrees[idx_rule_4] = 90.0
-    phi_pca_degrees[idx_rule_5] = -90.0
-    phi_pca_degrees[idx_rule_6] = np.nan
-
-    # phi_pca_degrees = np.degrees(np.sign(coords_pca[:, 1]) * np.arccos(coords_pca[:, 0] / (np.sqrt(coords_pca[:, 0] ** 2 + coords_pca[:, 1] ** 2))))
-
-    # idx_quadrant_3_4 = coords_pca[:, 0] < 0.0
-    # idx_quadrant_2 = (coords_pca[:, 0] > 0.0) & (coords_pca[:, 1] < 0.0)
-
-    # Change the reference (The positive X axis is the reference point)
-    # phi_pca_degrees[idx_quadrant_2] += 360.0
-    # phi_pca_degrees[idx_quadrant_3_4] += 180.0
-
-    # -------------------------------------------------------------------------------------
-    ## THETA CONVERSION (POLAR ANGLE)
-    theta_pca = np.arctan(
-        np.sqrt((coords_pca[:, 0] ** 2 + coords_pca[:, 1] ** 2)) / coords_pca[:, 2]
-    )
-    theta_pca_degrees = np.degrees(theta_pca)
-
-    # Rules of quadrants for theta angle
-    # idx_rule_1 = coords_pca[:, 2] > 0.0  # Do nothing
-    idx_rule_2 = coords_pca[:, 2] < 0.0
-    idx_rule_3 = (coords_pca[:, 2] == 0.0) & (
-        coords_pca[:, 0] * coords_pca[:, 1] != 0.0
-    )
-    idx_rule_4 = (
-        (coords_pca[:, 0] == 0.0)
-        & (coords_pca[:, 1] == 0.0)
-        & (coords_pca[:, 2] == 0.0)
-    )
-
-    theta_pca_degrees[idx_rule_2] += 180.0
-    theta_pca_degrees[idx_rule_3] = 90.0
-    theta_pca_degrees[idx_rule_4] = np.nan
-
-    # # Rules for the polar angle
-    # idx_quadrant_5_6_7_8 = coords_pca[:, 2] < 0.0
-    #
-    # # Change the reference (The positive Z axis is the reference point)
-    # theta_pca_degrees[idx_quadrant_5_6_7_8] += 180
-
-    return (r_pca, phi_pca_degrees, theta_pca_degrees)
 
 
 def random_VMF(mu, kappa, size=None):
