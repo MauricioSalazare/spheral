@@ -3,6 +3,7 @@ __pycache__/
 .vscode/
 /trash
 /scripts
+/rlps
 *.pyc
 *.pyo
 *.pyd
