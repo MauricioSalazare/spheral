@@ -45,7 +45,7 @@ def update_log_config(level_name: str, log_dir: str, log_file: str):
         # Add new file handler
         logger.addHandler(file_handler)
 
-    logger.info(f"Logging updated - Level: {level_name}, Dir: {log_dir}, File: {log_file}")
+    logger.debug(f"Logging updated - Level: {level_name}, Dir: {log_dir}, File: {log_file}")
 
 
 def log_function_call(func):
